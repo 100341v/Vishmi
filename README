@@ -1,0 +1,77 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package antz;
+
+
+public class Antz {
+
+
+    public static void main(String[] args) {
+        
+    }
+}
+
+class AntHill{
+    private boolean pathOpen;
+    
+    public AntHill(){
+        pathOpen=true;
+    }
+    
+    public synchronized boolean acquire(){
+        if(pathOpen){
+            pathOpen=false;
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    
+    public void release(){
+        if(pathOpen){
+            System.err.println("Something went wrong !");
+        }
+        else{
+            pathOpen=false;
+        }
+    }
+}
+
+class Ant extends Thread{
+    private int antId;
+    private boolean outside;
+    private AntHill hill;
+    
+    public Ant(int id,AntHill mound){
+        this.antId=id;
+        this.hill=mound;
+        outside=true;
+    }
+    
+    public int getAntId(){
+        return this.antId;
+    }
+    
+    private void tryToEnter(){
+        if(hill.acquire()){
+            outside=false;
+            try{
+                sleep(antId*100);
+            }
+            catch(InterruptedException ex){
+                System.err.println("Interrupted while sleeping !");
+            }
+        }
+        hill.release();
+        System.out.println("Ant "+antId+" is in");
+    }
+    
+    public void run(){
+        while(outside){
+            this.tryToEnter();
+        }
+    }
+}
